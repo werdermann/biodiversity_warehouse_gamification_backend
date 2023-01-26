@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+
+  db:
+    env_file: .env
+    image: mysql:8
+    # Image for Mac M1 processor
+    # image: arm64v8/mysql:oracle
+    volumes:
+      - db:/var/lib/mysql
+    ports:
+      - '3308:3306'
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    ports:
+      - '8083:80'
+
+volumes:
+  db:

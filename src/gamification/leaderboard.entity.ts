@@ -1,11 +1,10 @@
-class Leaderboard {
+export class Leaderboard {
   currentPosition: number;
-  users: Array<User>;
 
   /*
     resetDate
 + currentPosition: Int
-+ users: List<User>
++ users: List<UserEntity>
 + resetDate: Date
 
      */
