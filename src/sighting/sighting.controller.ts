@@ -1,8 +1,17 @@
-import { Body, Controller, Post, UploadedFiles } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common';
 import { SightingService } from './sighting.service';
 import { CreateSightingDto } from './dto/create-sighting.dto';
 import { GamificationService } from '../gamification/gamification.service';
 import { GamificationResult } from '../gamification/dto/gamification-result.dto';
+import { GamificationConfigResult } from '../gamification/dto/gamification-config-result.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { CreateSightingValidation } from '../pipe/form-data-validation.pipe';
 
 @Controller('sighting')
 export class SightingController {
@@ -12,14 +21,26 @@ export class SightingController {
   ) {}
 
   @Post()
+  @UseInterceptors(FilesInterceptor('files'))
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Body() createSightingDto: CreateSightingDto,
+    @Body(new CreateSightingValidation()) createSightingDto: CreateSightingDto,
   ): Promise<GamificationResult> {
-    console.log('files');
+    console.log('RAW');
+    console.log(createSightingDto);
+
+    console.log('FILES');
+
     console.log(files);
 
-    await this.sightingService.create(createSightingDto);
+    const photos = files.map((file) => {
+      return file.buffer.toString('base64');
+    });
+
+    console.log('Parsed photos');
+    console.log(photos);
+
+    await this.sightingService.create(createSightingDto, photos);
 
     const gamificationResult = await this.gamificationService.calculateResult(
       createSightingDto,
@@ -28,6 +49,8 @@ export class SightingController {
     console.log('RESULT');
     console.log(gamificationResult);
 
-    return gamificationResult;
+    // return gamificationResult;
+
+    return new GamificationResult();
   }
 }

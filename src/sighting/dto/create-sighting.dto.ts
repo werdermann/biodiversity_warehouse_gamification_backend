@@ -12,7 +12,12 @@ import {
 } from 'class-validator';
 import { Species } from '../entity/species.enum';
 import { EvidenceStatus } from '../entity/evidence-status.enum';
-import { Type } from 'class-transformer';
+import {
+  plainToClass,
+  plainToInstance,
+  Transform,
+  Type,
+} from 'class-transformer';
 import { ReportMethod } from '../entity/report-method.enum';
 
 export class CreateSightingDto {
@@ -33,22 +38,6 @@ export class CreateSightingDto {
   @Type(() => CreateSpeciesEntryDto)
   speciesEntries: CreateSpeciesEntryDto[];
 
-  /*
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => )
-
-   */
-
-  // TODO: Add photos
-
-  /*
-
-  @IsArray()
-  @Type(() => Pho)
-  photos
-
-   */
   @IsDateString()
   date: string;
 

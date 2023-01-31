@@ -9,14 +9,17 @@ export class SightingService {
   constructor(
     @InjectRepository(Sighting)
     private sightingRepository: Repository<Sighting>,
-  ) {}
+  ) // TODO: Create photo repository here
+  {}
 
   async create(
-    @Body() createSightingDto: CreateSightingDto,
+    createSightingDto: CreateSightingDto,
+    photos: string[],
   ): Promise<Sighting | null> {
-    console.log('Create Sighting in Service!');
     try {
-      const sighting = await this.sightingRepository.save(createSightingDto);
+      const sightingBody = { ...createSightingDto, photos };
+
+      const sighting = await this.sightingRepository.save(sightingBody);
 
       return sighting;
     } catch (_) {

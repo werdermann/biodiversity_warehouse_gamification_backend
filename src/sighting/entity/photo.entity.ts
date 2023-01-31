@@ -1,4 +1,4 @@
-import { Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Sighting } from './sighting.entity';
 
 @Entity()
@@ -8,4 +8,9 @@ export class Photo {
 
   @ManyToOne(() => Sighting, (sighting) => sighting.photos)
   sighting: Sighting;
+
+  @Column({
+    type: 'mediumblob',
+  })
+  data: string;
 }
