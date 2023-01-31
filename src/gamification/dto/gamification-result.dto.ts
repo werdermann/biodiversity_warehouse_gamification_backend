@@ -1,9 +1,8 @@
+import { User } from '../../user/user.entity';
+
 export class GamificationResult {
-  /*
   gainedPoints: number;
-  newUnlockedBadges: Array<Badge>;
+  newUnlockedBadges: number;
   newLeaderboardPosition: number;
   user: User;
-
-   */
 }

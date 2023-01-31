@@ -15,13 +15,13 @@ export async function createBaseData(app: INestApplication) {
     });
   }
 
-  const gamificationConfig = await gamificationService.findOne(1);
+  const gamificationConfig = await gamificationService.getConfiguration();
 
   if (!gamificationConfig) {
     await gamificationService.create({
-      badgesActive: false,
-      leaderboardActive: false,
-      onBoardingActive: false,
+      badgesActive: true,
+      leaderboardActive: true,
+      onBoardingActive: true,
     });
   }
 }
