@@ -1,0 +1,15 @@
+export enum BadgeCondition {
+  oneSightingReported,
+  fiveSightingsReported,
+  tenSightingsReported,
+  twentySightingsReported,
+  oneImageUploaded,
+  fiveImagesUploaded,
+  tenImagesUploaded,
+  twentyImagesUploaded,
+  oneCommentWritten,
+  fiveCommentsWritten,
+  tenCommentsWritten,
+  twentyCommentsWritten,
+  allBadgesUnlocked,
+}

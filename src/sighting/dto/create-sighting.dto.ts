@@ -12,12 +12,7 @@ import {
 } from 'class-validator';
 import { Species } from '../entity/species.enum';
 import { EvidenceStatus } from '../entity/evidence-status.enum';
-import {
-  plainToClass,
-  plainToInstance,
-  Transform,
-  Type,
-} from 'class-transformer';
+import { Type } from 'class-transformer';
 import { ReportMethod } from '../entity/report-method.enum';
 
 export class CreateSightingDto {

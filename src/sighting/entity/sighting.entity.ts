@@ -1,7 +1,14 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { SpeciesEntry } from './species-entry.entity';
 import { Photo } from './photo.entity';
 import { ReportMethod } from './report-method.enum';
+import { User } from '../../user/user.entity';
 
 @Entity()
 export class Sighting {
@@ -23,7 +30,10 @@ export class Sighting {
   @OneToMany(() => Photo, (photo) => photo.sighting)
   photos: Photo[];
 
-  @Column()
+  @ManyToOne(() => User, (user) => user.sightings)
+  user: User;
+
+  @Column({ default: '' })
   date: string;
 
   @Column({

@@ -1,15 +1,17 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { gamificationConstants } from '../gamification/constants';
+import { UnlockedBadge } from '../gamification/unlocked-badge.entity';
+import { LockedBadge } from '../gamification/locked-badge.entity';
+import { Sighting } from '../sighting/entity/sighting.entity';
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ select: false })
   password: string;
 
-  @Column()
+  @Column({ unique: true })
   username: string;
 
   @Column({ default: false })
@@ -18,14 +20,20 @@ export class User {
   @Column({ default: 0 })
   points: number;
 
-  /*
-  @OneToMany((type) => Badge, (badge) => badge.user)
-  unlockedBadges: Badge[];
+  @OneToMany(() => UnlockedBadge, (badge) => badge.user)
+  unlockedBadges: UnlockedBadge[];
 
-  @Column({ default: gamificationConstants.lockedStarterBadges })
-  lockedBadges: Badge[];
+  @OneToMany(() => LockedBadge, (badge) => badge.user)
+  lockedBadges: LockedBadge[];
 
-   */
+  @OneToMany(() => Sighting, (sighting) => sighting.user)
+  sightings: Sighting[];
+
+  @Column({ default: 0 })
+  totalPhotoCount: number;
+
+  @Column({ default: 0 })
+  totalCommentCount: number;
 
   @Column({ default: null })
   leaderboardPosition: number | null;

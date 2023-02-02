@@ -5,7 +5,7 @@ import { AuthService } from './auth/auth.service';
 import { AuthController } from './auth/auth.controller';
 import { SightingController } from './sighting/sighting.controller';
 import { SightingModule } from './sighting/sighting.module';
-import { GamificationModule } from './gamification/gamification.module';
+import { GamificationModule } from './gamification/presentation/gamification.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';

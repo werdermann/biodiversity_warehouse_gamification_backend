@@ -2,16 +2,20 @@ import {
   Body,
   Controller,
   Post,
+  Req,
+  Request,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { SightingService } from './sighting.service';
 import { CreateSightingDto } from './dto/create-sighting.dto';
-import { GamificationService } from '../gamification/gamification.service';
-import { GamificationResult } from '../gamification/dto/gamification-result.dto';
-import { GamificationConfigResult } from '../gamification/dto/gamification-config-result.dto';
+import { GamificationService } from '../gamification/domain/gamification.service';
+import { GamificationResult } from '../gamification/domain/models/gamification-result.dto';
+import { GamificationConfigResult } from '../gamification/domain/models/gamification-config-result.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateSightingValidation } from '../pipe/form-data-validation.pipe';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 
 @Controller('sighting')
 export class SightingController {
@@ -21,35 +25,34 @@ export class SightingController {
   ) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   @UseInterceptors(FilesInterceptor('files'))
   async create(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @Body(new CreateSightingValidation()) createSightingDto: CreateSightingDto,
+    @Request() req,
   ): Promise<GamificationResult> {
-    console.log('RAW');
-    console.log(createSightingDto);
-
-    console.log('FILES');
-
-    console.log(files);
-
+    // Parse files into base64 strings
     const photos = files.map((file) => {
       return file.buffer.toString('base64');
     });
 
-    console.log('Parsed photos');
-    console.log(photos);
+    const userId = req.user.id;
 
-    await this.sightingService.create(createSightingDto, photos);
+    // Store sighting in database
+    const sighting = await this.sightingService.create(
+      userId,
+      createSightingDto,
+      photos,
+    );
 
     const gamificationResult = await this.gamificationService.calculateResult(
-      createSightingDto,
+      sighting,
+      userId,
     );
 
     console.log('RESULT');
     console.log(gamificationResult);
-
-    // return gamificationResult;
 
     return new GamificationResult();
   }
