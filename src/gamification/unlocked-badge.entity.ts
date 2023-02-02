@@ -6,7 +6,7 @@ import { BadgeCondition } from './domain/models/badge-condition.enum';
 
 @Entity()
 export class UnlockedBadge {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn({})
   id: number;
 
   @Column({

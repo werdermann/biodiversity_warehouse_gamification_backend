@@ -51,9 +51,6 @@ export class SightingController {
       userId,
     );
 
-    console.log('RESULT');
-    console.log(gamificationResult);
-
-    return new GamificationResult();
+    return gamificationResult;
   }
 }

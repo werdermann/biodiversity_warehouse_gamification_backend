@@ -53,7 +53,7 @@ export async function createBaseData(app: INestApplication) {
   const gamificationConfig = await gamificationService.getConfiguration();
 
   if (!gamificationConfig) {
-    await gamificationService.create({
+    await gamificationService.createConfig({
       badgesActive: true,
       leaderboardActive: true,
       onBoardingActive: true,

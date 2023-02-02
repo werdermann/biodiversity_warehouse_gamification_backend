@@ -261,26 +261,23 @@ export class GamificationService {
     return this.gamificationRepository.findOneBy({ id });
   }
 
-  async create(
-    @Body() createGamificationConfigDto: CreateGamificationConfigDto,
-  ) {
-    const config = new GamificationConfig();
-    config.onBoardingActive = createGamificationConfigDto.onBoardingActive;
-    config.leaderboardActive = createGamificationConfigDto.leaderboardActive;
-    config.badgesActive = createGamificationConfigDto.badgesActive;
-
-    const result = await this.gamificationRepository.save(config);
+  async createConfig(createGamificationConfigDto: CreateGamificationConfigDto) {
+    await this.gamificationRepository.save(createGamificationConfigDto);
   }
 
-  async getConfiguration(): Promise<GamificationConfigResult> {
+  async getConfiguration(): Promise<GamificationConfigResult | null> {
     try {
-      const config = await this.gamificationRepository.findOneOrFail({});
+      const configList = await this.gamificationRepository.find();
+
+      if (!configList) return null;
+
+      const config = configList[0];
 
       // Remove id
       const { id, ...result } = config;
 
       return result;
-    } catch (_) {
+    } catch (e) {
       return null;
     }
   }

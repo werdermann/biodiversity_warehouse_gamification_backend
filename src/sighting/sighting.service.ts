@@ -33,10 +33,6 @@ export class SightingService {
         user,
       };
 
-      console.log('CREATE SIGHTING');
-
-      console.log(createSighting);
-
       const sighting = await this.sightingRepository.save(createSighting);
 
       // Store the photos in the sighting response

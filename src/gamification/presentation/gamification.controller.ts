@@ -11,8 +11,6 @@ export class GamificationController {
 
   @Get()
   async getGamificationConfig(): Promise<GamificationConfigResult> {
-    console.log('GET GAMIFICATION CONFIG');
-
     return this.gamificationService.getConfiguration();
   }
 
