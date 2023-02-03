@@ -1,21 +1,25 @@
-import { Controller, Get, Req } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import {
   GamificationService,
   LeaderboardResponse,
 } from '../domain/gamification.service';
 import { GamificationConfigResult } from '../domain/models/gamification-config-result.dto';
+import { JwtAuthGuard } from '../../guards/jwt-auth.guard';
 
 @Controller('gamification')
 export class GamificationController {
   constructor(private readonly gamificationService: GamificationService) {}
 
-  @Get()
+  @Get('config')
   async getGamificationConfig(): Promise<GamificationConfigResult> {
     return this.gamificationService.getConfiguration();
   }
 
-  @Get()
+  @UseGuards(JwtAuthGuard)
+  @Get('leaderboard')
   async getLeaderboard(@Req() req): Promise<LeaderboardResponse> {
-    return this.gamificationService.getLeaderboard(req.user);
+    const username = req.user.username;
+
+    return this.gamificationService.getLeaderboard(username);
   }
 }

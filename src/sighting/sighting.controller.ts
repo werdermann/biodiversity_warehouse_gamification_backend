@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Post,
-  Req,
   Request,
   UploadedFiles,
   UseGuards,
@@ -12,7 +11,6 @@ import { SightingService } from './sighting.service';
 import { CreateSightingDto } from './dto/create-sighting.dto';
 import { GamificationService } from '../gamification/domain/gamification.service';
 import { GamificationResult } from '../gamification/domain/models/gamification-result.dto';
-import { GamificationConfigResult } from '../gamification/domain/models/gamification-config-result.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { CreateSightingValidation } from '../pipe/form-data-validation.pipe';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
@@ -46,11 +44,6 @@ export class SightingController {
       photos,
     );
 
-    const gamificationResult = await this.gamificationService.calculateResult(
-      sighting,
-      userId,
-    );
-
-    return gamificationResult;
+    return await this.gamificationService.calculateResult(sighting, userId);
   }
 }
