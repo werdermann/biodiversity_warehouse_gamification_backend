@@ -137,6 +137,8 @@ export class GamificationService {
   ): Promise<UnlockedBadgeResponse[]> {
     const newUnlockedBadges: Partial<UnlockedBadge>[] = [];
 
+    // TODO: Update badges to depend on species entries
+
     /// Iterate through the badges that can still be unlocked
     for (const badge of user.lockedBadges) {
       // Check through the different conditions and remove the according badge if it is unlocked by the user
