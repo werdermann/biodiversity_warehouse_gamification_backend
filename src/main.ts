@@ -1,13 +1,14 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
-import { createBaseData } from './app.bootstrap';
+import { AppModule } from './app/app.module';
+import { createBaseData } from './app/app.bootstrap';
 
+/**
+ * Main entry point of the application
+ */
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // app.useGlobalPipes(new ValidationPipe());
-
+  // Create the fake users
   await createBaseData(app);
 
   await app.listen(3000);

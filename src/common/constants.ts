@@ -1,6 +1,7 @@
-import { BadgeCondition } from '../gamification/domain/models/badge-condition.enum';
+import { BadgeCondition } from '../gamification/models/badge-condition.enum';
 
 export const Constants = {
+  jwtSecret: 'secretKey',
   entryPoints: 10,
   commentPoints: 5,
   photoPoints: 10,

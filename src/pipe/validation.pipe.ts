@@ -7,6 +7,9 @@ import {
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 
+/**
+ * Standard validation pipe to validate dto objects from the mobile application.
+ */
 @Injectable()
 export class ValidationPipe implements PipeTransform<any> {
   async transform(value: any, { metatype }: ArgumentMetadata) {

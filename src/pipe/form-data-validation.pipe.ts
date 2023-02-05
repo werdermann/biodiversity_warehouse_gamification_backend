@@ -7,6 +7,10 @@ import {
 import { validate } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 
+/**
+ * Custom validation pipe that transforms the string data to a json object when the user is posting data in the form
+ * data format.
+ */
 @Injectable()
 export class CreateSightingValidation implements PipeTransform<any> {
   async transform(value: any, { metatype }: ArgumentMetadata) {

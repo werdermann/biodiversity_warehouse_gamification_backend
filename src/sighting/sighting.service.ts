@@ -1,11 +1,14 @@
-import { Body, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Sighting } from './entity/sighting.entity';
-import { CreateSightingDto } from './dto/create-sighting.dto';
-import { Photo } from './entity/photo.entity';
-import { User } from '../user/user.entity';
+import { Sighting } from './models/sighting.entity';
+import { CreateSightingDto } from './models/create-sighting.dto';
+import { Photo } from './models/photo.entity';
+import { User } from '../user/models/user.entity';
 
+/**
+ * Business logic for reporting a sighting.
+ */
 @Injectable()
 export class SightingService {
   constructor(
@@ -17,23 +20,29 @@ export class SightingService {
     private readonly userRepository: Repository<User>,
   ) {}
 
+  /**
+   * Creates a new sighting.
+   * @param userId
+   * @param createSightingDto
+   * @param photos
+   */
   async create(
     userId: number,
     createSightingDto: CreateSightingDto,
     photos: string[],
   ): Promise<Sighting | null> {
     try {
+      // Find the current user
       const user = await this.userRepository.findOne({
         where: { id: userId },
         relations: ['unlockedBadges', 'lockedBadges', 'sightings'],
       });
 
-      const createSighting = {
-        ...createSightingDto,
-        user,
-      };
+      /// Create an updated object that contains the user object
+      const sightingBody = { ...createSightingDto, user };
 
-      const sighting = await this.sightingRepository.save(createSighting);
+      /// Store the sighting instance
+      const sighting = await this.sightingRepository.save(sightingBody);
 
       // Store the photos in the sighting response
       sighting.photos = await Promise.all(

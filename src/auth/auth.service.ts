@@ -1,16 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '../user/user.entity';
-import { use } from 'passport';
+import { User } from '../user/models/user.entity';
 import { ConfigService } from '@nestjs/config';
+import { LoginResponse } from './models/login.response';
 
-export class AuthResponse {
-  public user: User;
-  public accessToken: string;
-  public refreshToken: string;
-}
-
+/**
+ * Manages the business logic of the authentication process.
+ */
 @Injectable()
 export class AuthService {
   constructor(
@@ -19,6 +16,11 @@ export class AuthService {
     private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * Checks if the user is existing in the database.
+   * @param username
+   * @param pass
+   */
   async validateUser(username: string, pass: string): Promise<any> {
     const user = await this.userService.findByUsername(username);
 
@@ -30,7 +32,11 @@ export class AuthService {
     return null;
   }
 
-  async login(user: User): Promise<AuthResponse> {
+  /**
+   * Logs the user into the backend application
+   * @param user
+   */
+  async login(user: User): Promise<LoginResponse> {
     const tokenPayload: object = { ...user };
     const refreshTokenPayload: object = { id: user.id };
 
@@ -45,15 +51,5 @@ export class AuthService {
         ),
       }),
     };
-
-    /*
-    const payload = { username: user.username, sub: user.userId };
-
-    return {
-      accessToken: this.jwtService.sign(payload),
-      user: user,
-    };
-
-     */
   }
 }

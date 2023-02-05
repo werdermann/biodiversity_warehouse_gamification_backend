@@ -1,9 +1,12 @@
 import { Body, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './user.entity';
+import { User } from './models/user.entity';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './models/create-user.dto';
 
+/**
+ * Business logic that manages the user domain.
+ */
 @Injectable()
 export class UserService {
   constructor(
@@ -11,21 +14,12 @@ export class UserService {
     private userRepository: Repository<User>,
   ) {}
 
-  async findAll(): Promise<User[]> {
-    return this.userRepository
-      .createQueryBuilder('user')
-      .addSelect('user.password')
-      .getMany();
-  }
-
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
     const user = new User();
     user.username = createUserDto.username;
     user.password = createUserDto.password;
 
-    const result = await this.userRepository.save(user);
-
-    return result;
+    return await this.userRepository.save(user);
   }
 
   async findByUsername(username: string): Promise<User | undefined> {
