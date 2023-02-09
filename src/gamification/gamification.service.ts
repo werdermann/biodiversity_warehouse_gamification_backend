@@ -139,12 +139,19 @@ export class GamificationService {
 
     // TODO: Update badges to depend on species entries
 
+    let speciesLength = 0;
+    user.sightings.forEach((sighting) => {
+      sighting.speciesEntries.forEach(() => {
+        speciesLength++;
+      });
+    });
+
     /// Iterate through the badges that can still be unlocked
     for (const badge of user.lockedBadges) {
       // Check through the different conditions and remove the according badge if it is unlocked by the user
       switch (badge.condition) {
-        case BadgeCondition.oneSightingReported: {
-          if (user.sightings.length >= 1) {
+        case BadgeCondition.oneSpeciesReported: {
+          if (speciesLength >= 1) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
@@ -153,8 +160,8 @@ export class GamificationService {
           }
           break;
         }
-        case BadgeCondition.fiveSightingsReported: {
-          if (user.sightings.length >= 5) {
+        case BadgeCondition.fiveSpeciesReported: {
+          if (speciesLength >= 5) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
@@ -163,8 +170,8 @@ export class GamificationService {
           }
           break;
         }
-        case BadgeCondition.tenSightingsReported: {
-          if (user.sightings.length >= 10) {
+        case BadgeCondition.tenSpeciesReported: {
+          if (speciesLength >= 10) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
@@ -173,8 +180,8 @@ export class GamificationService {
           }
           break;
         }
-        case BadgeCondition.twentySightingsReported: {
-          if (user.sightings.length >= 20) {
+        case BadgeCondition.twentySpeciesReported: {
+          if (speciesLength >= 20) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,

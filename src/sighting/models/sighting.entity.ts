@@ -27,7 +27,7 @@ export class Sighting {
   @Column({ default: '' })
   locationComment: string;
 
-  @OneToMany(() => SpeciesEntry, (entry) => entry.sighting)
+  @OneToMany(() => SpeciesEntry, (entry) => entry.sighting, { eager: true })
   speciesEntries: SpeciesEntry[];
 
   @OneToMany(() => Photo, (photo) => photo.sighting)

@@ -5,6 +5,7 @@ import { Sighting } from './models/sighting.entity';
 import { CreateSightingDto } from './models/create-sighting.dto';
 import { Photo } from './models/photo.entity';
 import { User } from '../user/models/user.entity';
+import { SpeciesEntry } from './models/species-entry.entity';
 
 /**
  * Business logic for reporting a sighting.
@@ -18,6 +19,8 @@ export class SightingService {
     private photoRepository: Repository<Photo>,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(SpeciesEntry)
+    private speciesEntryRepository: Repository<SpeciesEntry>,
   ) {}
 
   /**
@@ -43,6 +46,19 @@ export class SightingService {
 
       /// Store the sighting instance
       const sighting = await this.sightingRepository.save(sightingBody);
+
+      // Store the sightings
+      sighting.speciesEntries = await Promise.all(
+        createSightingDto.speciesEntries.map(async (entry) =>
+          this.speciesEntryRepository.save({
+            sighting: sighting,
+            comment: entry.comment,
+            count: entry.count,
+            species: entry.species,
+            evidenceStatus: entry.evidenceStatus,
+          }),
+        ),
+      );
 
       // Store the photos in the sighting response
       sighting.photos = await Promise.all(

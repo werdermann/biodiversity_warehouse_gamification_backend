@@ -2,10 +2,10 @@
  * Badge condition represents the condition when a badge is unlocked.
  */
 export enum BadgeCondition {
-  oneSightingReported,
-  fiveSightingsReported,
-  tenSightingsReported,
-  twentySightingsReported,
+  oneSpeciesReported,
+  fiveSpeciesReported,
+  tenSpeciesReported,
+  twentySpeciesReported,
   oneImageUploaded,
   fiveImagesUploaded,
   tenImagesUploaded,
