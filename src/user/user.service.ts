@@ -15,11 +15,11 @@ export class UserService {
   ) {}
 
   async create(@Body() createUserDto: CreateUserDto): Promise<User> {
-    const user = new User();
-    user.username = createUserDto.username;
-    user.password = createUserDto.password;
-
-    return await this.userRepository.save(user);
+    return await this.userRepository.save({
+      username: createUserDto.username,
+      password: createUserDto.password,
+      points: createUserDto.points,
+    });
   }
 
   async findByUsername(username: string): Promise<User | undefined> {
