@@ -9,6 +9,11 @@ export async function createBaseData(app: INestApplication) {
 
   const users: CreateUserDto[] = [
     {
+      username: 'Testnutzer',
+      password: '123',
+      points: 0,
+    },
+    {
       username: 'DerFlamingo',
       password: '123',
       points: 1500,

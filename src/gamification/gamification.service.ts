@@ -14,6 +14,9 @@ import { BadgeCondition } from './models/badge-condition.enum';
 import { LeaderboardResponse } from './models/leaderboard.response';
 import { PointResponse } from './models/point.response';
 import { UnlockedBadgeResponse } from './models/unlocked-badge.response';
+import { Species } from '../sighting/models/species.enum';
+import { EvidenceStatus } from '../sighting/models/evidence-status.enum';
+import { ReportMethod } from '../sighting/models/report-method.enum';
 
 /**
  * Contains the business logic for calculating the gamification result, to check which badges are being unlocked by the
@@ -77,8 +80,24 @@ export class GamificationService {
     const leaderboard = await this.getLeaderboard(updatedUser.username);
 
     // Check if the player gained a new position on the leaderboard
-    const hasNewLeaderboardPosition =
+    let hasNewLeaderboardPosition =
       user.leaderboardPosition != leaderboard.currentPosition;
+    if (!user.leaderboardPosition) {
+      hasNewLeaderboardPosition = false;
+    }
+
+    const currentUser = await this.userRepository.save(updatedUser);
+
+    console.log('### CURRENT USER ###');
+    console.log(currentUser);
+    console.log('### CURRENT USER END ###');
+
+    let sightingCount = 0;
+    currentUser.sightings.map((sighting) => {
+      sightingCount += sighting.speciesEntries.length;
+    });
+
+    console.log(`Sighting Count ${sightingCount}`);
 
     return {
       leaderboard,
@@ -99,8 +118,17 @@ export class GamificationService {
     let commentsCount = 0;
 
     sighting.speciesEntries.forEach((entry) => {
-      points += Constants.entryPoints;
+      // Give user points if the species is specified.
+      if (entry.species != Species.notSpecified) {
+        points += Constants.speciesPoints;
+      }
 
+      // Give user points if the evidence status is specified.
+      if (entry.evidenceStatus != EvidenceStatus.notSpecified) {
+        points += Constants.evidencePoints;
+      }
+
+      // Give user points if the comment is added.
       if (entry.comment) {
         points += Constants.commentPoints;
         commentsCount++;
@@ -115,6 +143,11 @@ export class GamificationService {
     sighting.photos.forEach(() => {
       points += Constants.photoPoints;
     });
+
+    // Give user points if the report method is specified.
+    if (sighting.reportMethod != ReportMethod.notSpecified) {
+      points += Constants.reportMethodPoints;
+    }
 
     if (sighting.detailsComment) {
       points += Constants.commentPoints;
@@ -136,8 +169,6 @@ export class GamificationService {
     user: User,
   ): Promise<UnlockedBadgeResponse[]> {
     const newUnlockedBadges: Partial<UnlockedBadge>[] = [];
-
-    // TODO: Update badges to depend on species entries
 
     let speciesLength = 0;
     user.sightings.forEach((sighting) => {
