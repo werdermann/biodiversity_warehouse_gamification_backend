@@ -14,24 +14,14 @@ export async function createBaseData(app: INestApplication) {
       points: 0,
     },
     {
-      username: 'DerFlamingo',
+      username: 'HobbyEntdecker',
       password: '123',
-      points: 1500,
+      points: 40,
     },
     {
-      username: 'Bioexperte97',
+      username: 'Forscher123',
       password: '123',
-      points: 2000,
-    },
-    {
-      username: 'CharlesDarwin',
-      password: '123',
-      points: 1900,
-    },
-    {
-      username: 'Mendel',
-      password: '123',
-      points: 820,
+      points: 80,
     },
     {
       username: 'deLamarck',
@@ -41,17 +31,27 @@ export async function createBaseData(app: INestApplication) {
     {
       username: 'Einstein',
       password: '123',
-      points: 1010,
+      points: 110,
     },
     {
-      username: 'HobbyEntdecker',
+      username: 'Mendel',
       password: '123',
-      points: 210,
+      points: 200,
     },
     {
-      username: 'Forscher123',
+      username: 'CharlesDarwin',
       password: '123',
-      points: 515,
+      points: 230,
+    },
+    {
+      username: 'Bioexperte97',
+      password: '123',
+      points: 265,
+    },
+    {
+      username: 'DerFlamingo',
+      password: '123',
+      points: 280,
     },
   ];
 
@@ -64,6 +64,17 @@ export async function createBaseData(app: INestApplication) {
 
       await gamificationService.createStarterBadges(userObject);
     }
+  }
+
+  // Save leaderboard positions
+  const savedUsers = await userService.findAllSortedByPoints();
+
+  for (const user of savedUsers) {
+    const position = savedUsers.indexOf(user);
+    user.leaderboardPosition = position;
+
+    // Save current leaderboard position
+    await userService.updateUser(user);
   }
 
   const gamificationConfig = await gamificationService.getConfiguration();

@@ -80,11 +80,10 @@ export class GamificationService {
     const leaderboard = await this.getLeaderboard(updatedUser.username);
 
     // Check if the player gained a new position on the leaderboard
-    let hasNewLeaderboardPosition =
+    const hasNewLeaderboardPosition =
       user.leaderboardPosition != leaderboard.currentPosition;
-    if (!user.leaderboardPosition) {
-      hasNewLeaderboardPosition = false;
-    }
+
+    updatedUser.leaderboardPosition = leaderboard.currentPosition;
 
     const currentUser = await this.userRepository.save(updatedUser);
 
@@ -211,8 +210,8 @@ export class GamificationService {
           }
           break;
         }
-        case BadgeCondition.twentySpeciesReported: {
-          if (speciesLength >= 20) {
+        case BadgeCondition.fifteenSpeciesReported: {
+          if (speciesLength >= 15) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
@@ -251,8 +250,8 @@ export class GamificationService {
           }
           break;
         }
-        case BadgeCondition.twentyCommentsWritten: {
-          if (user.totalCommentCount >= 20) {
+        case BadgeCondition.fifteenCommentsWritten: {
+          if (user.totalCommentCount >= 15) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
@@ -291,8 +290,8 @@ export class GamificationService {
           }
           break;
         }
-        case BadgeCondition.twentyImagesUploaded: {
-          if (user.totalPhotoCount >= 20) {
+        case BadgeCondition.fifteenImagesUploaded: {
+          if (user.totalPhotoCount >= 15) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
