@@ -12,7 +12,6 @@ import { User } from '../user/models/user.entity';
 import { LockedBadge } from './models/locked-badge.entity';
 import { BadgeCondition } from './models/badge-condition.enum';
 import { LeaderboardResponse } from './models/leaderboard.response';
-import { PointResponse } from './models/point.response';
 import { UnlockedBadgeResponse } from './models/unlocked-badge.response';
 import { Species } from '../sighting/models/species.enum';
 import { EvidenceStatus } from '../sighting/models/evidence-status.enum';
@@ -44,48 +43,19 @@ export class GamificationService {
     sighting: Sighting,
     userId: number,
   ): Promise<GamificationResultResponse> {
-    // Calculate the points of the user
-    const { gainedPoints, commentsCount } = await this.calculatePoints(
-      sighting,
-    );
+    const oldUser = await this.userRepository.findOneBy({ id: userId });
 
-    // Get the current user instance
-    const user = await this.userRepository.findOne({
+    const gainedPoints = await this.calculatePoints(sighting, userId);
+
+    const newUnlockedBadges = await this.checkBadgeConditions(userId);
+
+    const { hasNewLeaderboardPosition, leaderboard } =
+      await this.checkLeaderboardPosition(userId, oldUser.leaderboardPosition);
+
+    const currentUser = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['unlockedBadges', 'lockedBadges', 'sightings'],
     });
-
-    // Update the user object based on the new stats
-    user.points += gainedPoints;
-    user.totalCommentCount += commentsCount;
-    user.totalPhotoCount += sighting.photos.length;
-
-    // Check if the user unlocked a new badge
-    const newUnlockedBadges = await this.checkBadgeConditions(user);
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    user.unlockedBadges.push(...newUnlockedBadges);
-
-    // Update user entity in database
-    await this.userRepository.save(user);
-
-    // Get user to receive updated list of locked badges
-    const updatedUser = await this.userRepository.findOne({
-      where: { id: userId },
-      relations: ['unlockedBadges', 'lockedBadges', 'sightings'],
-    });
-
-    // Fetch current leaderboard
-    const leaderboard = await this.getLeaderboard(updatedUser.username);
-
-    // Check if the player gained a new position on the leaderboard
-    const hasNewLeaderboardPosition =
-      user.leaderboardPosition != leaderboard.currentPosition;
-
-    updatedUser.leaderboardPosition = leaderboard.currentPosition;
-
-    const currentUser = await this.userRepository.save(updatedUser);
 
     console.log('### CURRENT USER ###');
     console.log(currentUser);
@@ -102,19 +72,22 @@ export class GamificationService {
       leaderboard,
       hasNewLeaderboardPosition,
       newUnlockedBadges,
-      user: updatedUser,
+      user: currentUser,
       gainedPoints,
     };
   }
 
   /**
    * Calculates the points of the user based on the reported sighting.
-   * @param sighting
    * @private
+   * @param sighting
+   * @param userId
    */
-  private async calculatePoints(sighting: Sighting): Promise<PointResponse> {
+  private async calculatePoints(
+    sighting: Sighting,
+    userId: number,
+  ): Promise<number> {
     let points = 0;
-    let commentsCount = 0;
 
     sighting.speciesEntries.forEach((entry) => {
       // Give user points if the species is specified.
@@ -130,13 +103,11 @@ export class GamificationService {
       // Give user points if the comment is added.
       if (entry.comment) {
         points += Constants.commentPoints;
-        commentsCount++;
       }
     });
 
     if (sighting.locationComment) {
       points += Constants.commentPoints;
-      commentsCount++;
     }
 
     sighting.photos.forEach(() => {
@@ -150,23 +121,28 @@ export class GamificationService {
 
     if (sighting.detailsComment) {
       points += Constants.commentPoints;
-      commentsCount++;
     }
 
-    return {
-      gainedPoints: points,
-      commentsCount,
-    };
+    const user = await this.userRepository.findOneBy({ id: userId });
+    user.points += points;
+    await this.userRepository.save(user);
+
+    return points;
   }
 
   /**
    * Validates if the user has unlocked any new badges.
-   * @param user
    * @private
+   * @param userId
    */
   private async checkBadgeConditions(
-    user: User,
+    userId: number,
   ): Promise<UnlockedBadgeResponse[]> {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['unlockedBadges', 'lockedBadges', 'sightings'],
+    });
+
     const newUnlockedBadges: Partial<UnlockedBadge>[] = [];
 
     let speciesLength = 0;
@@ -304,7 +280,7 @@ export class GamificationService {
     }
 
     // Badge that indicates that all other badges have been unlocked
-    const allBadgesBadge = user.lockedBadges.find(
+    const hasUnlockedAllBadgesBadge = user.lockedBadges.find(
       (badge) => badge.condition == BadgeCondition.allBadgesUnlocked,
     );
 
@@ -312,23 +288,30 @@ export class GamificationService {
     if (
       user.unlockedBadges.length + newUnlockedBadges.length ==
         Constants.allBadges &&
-      allBadgesBadge
+      hasUnlockedAllBadgesBadge
     ) {
       newUnlockedBadges.push({
         user,
         condition: BadgeCondition.allBadgesUnlocked,
       });
 
-      await this.lockedBadgeRepository.remove(allBadgesBadge);
+      await this.lockedBadgeRepository.remove(hasUnlockedAllBadgesBadge);
     }
 
     const result = await this.unlockedBadgeRepository.save(newUnlockedBadges);
 
-    // Returns a list of unlocked badges
-    return result.map((entry) => {
+    const newBadges = result.map((entry) => {
       entry.user = undefined; // Set user as undefined to avoid circular parsing error
       return entry;
     });
+
+    user.unlockedBadges.push(...newBadges);
+
+    // Update user entity in database
+    await this.userRepository.save(user);
+
+    // Returns a list of unlocked badges
+    return newBadges;
   }
 
   /**
@@ -358,9 +341,16 @@ export class GamificationService {
 
   /**
    * Returns the current leaderboard and the current position based on the username.
-   * @param username
+   * @param userId
+   * @param oldUserPosition
    */
-  async getLeaderboard(username: string): Promise<LeaderboardResponse> {
+  async checkLeaderboardPosition(
+    userId: number,
+    oldUserPosition: number,
+  ): Promise<{
+    hasNewLeaderboardPosition: boolean;
+    leaderboard: LeaderboardResponse;
+  }> {
     const allUsers = await this.userRepository.find({
       order: {
         points: {
@@ -369,12 +359,15 @@ export class GamificationService {
       },
     });
 
-    const position = allUsers.findIndex((u) => u.username == username);
+    const user = allUsers.find((u) => u.id === userId);
+
+    const currentPosition = allUsers.indexOf(user);
+
+    const hasNewLeaderboardPosition = oldUserPosition != currentPosition;
 
     const leaderboardUsers = allUsers.map((user) => {
       // Delete the given attributes of the user objects because only the points and the username of the user matter
       const {
-        id,
         isAdmin,
         unlockedBadges,
         lockedBadges,
@@ -390,8 +383,11 @@ export class GamificationService {
     });
 
     return {
-      currentPosition: position,
-      users: leaderboardUsers,
+      hasNewLeaderboardPosition,
+      leaderboard: {
+        currentPosition: currentPosition,
+        users: leaderboardUsers,
+      },
     };
   }
 
@@ -408,5 +404,41 @@ export class GamificationService {
         }),
       ),
     );
+  }
+
+  async getLeaderboardByUserId(userId: number): Promise<LeaderboardResponse> {
+    const allUsers = await this.userRepository.find({
+      order: {
+        points: {
+          direction: 'DESC',
+        },
+      },
+    });
+
+    const user = allUsers.find((u) => u.id === userId);
+
+    const currentPosition = allUsers.indexOf(user);
+
+    const leaderboardUsers = allUsers.map((user) => {
+      // Delete the given attributes of the user objects because only the points and the username of the user matter
+      const {
+        isAdmin,
+        unlockedBadges,
+        lockedBadges,
+        sightings,
+        totalCommentCount,
+        totalPhotoCount,
+        password,
+        leaderboardPosition,
+        ...leaderboardUser
+      } = user;
+
+      return leaderboardUser;
+    });
+
+    return {
+      currentPosition: currentPosition,
+      users: leaderboardUsers,
+    };
   }
 }

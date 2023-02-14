@@ -19,8 +19,8 @@ export class GamificationController {
   @UseGuards(JwtAuthGuard)
   @Get('leaderboard')
   async getLeaderboard(@Req() req): Promise<LeaderboardResponse> {
-    const username = req.user.username;
+    const username = req.user.id;
 
-    return this.gamificationService.getLeaderboard(username);
+    return this.gamificationService.getLeaderboardByUserId(username);
   }
 }
