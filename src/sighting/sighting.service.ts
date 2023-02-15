@@ -50,6 +50,8 @@ export class SightingService {
       // Store the sightings
       sighting.speciesEntries = await Promise.all(
         createSightingDto.speciesEntries.map(async (entry) => {
+          user.totalSpeciesEntryCount++;
+
           if (entry.comment) {
             user.totalCommentCount++;
           }

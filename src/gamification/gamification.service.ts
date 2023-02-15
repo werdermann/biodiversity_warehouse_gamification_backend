@@ -57,6 +57,7 @@ export class GamificationService {
       relations: ['unlockedBadges', 'lockedBadges', 'sightings'],
     });
 
+    // TODO: Here for test purposes
     console.log('### CURRENT USER ###');
     console.log(currentUser);
     console.log('### CURRENT USER END ###');
@@ -67,6 +68,7 @@ export class GamificationService {
     });
 
     console.log(`Sighting Count ${sightingCount}`);
+    // TODO: END
 
     return {
       leaderboard,
@@ -140,24 +142,17 @@ export class GamificationService {
   ): Promise<UnlockedBadgeResponse[]> {
     const user = await this.userRepository.findOne({
       where: { id: userId },
-      relations: ['unlockedBadges', 'lockedBadges', 'sightings'],
+      relations: ['unlockedBadges', 'lockedBadges'],
     });
 
     const newUnlockedBadges: Partial<UnlockedBadge>[] = [];
-
-    let speciesLength = 0;
-    user.sightings.forEach((sighting) => {
-      sighting.speciesEntries.forEach(() => {
-        speciesLength++;
-      });
-    });
 
     /// Iterate through the badges that can still be unlocked
     for (const badge of user.lockedBadges) {
       // Check through the different conditions and remove the according badge if it is unlocked by the user
       switch (badge.condition) {
         case BadgeCondition.oneSpeciesReported: {
-          if (speciesLength >= 1) {
+          if (user.totalSpeciesEntryCount >= 1) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
@@ -167,7 +162,7 @@ export class GamificationService {
           break;
         }
         case BadgeCondition.fiveSpeciesReported: {
-          if (speciesLength >= 5) {
+          if (user.totalSpeciesEntryCount >= 5) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
@@ -177,7 +172,7 @@ export class GamificationService {
           break;
         }
         case BadgeCondition.tenSpeciesReported: {
-          if (speciesLength >= 10) {
+          if (user.totalSpeciesEntryCount >= 10) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
@@ -187,7 +182,7 @@ export class GamificationService {
           break;
         }
         case BadgeCondition.fifteenSpeciesReported: {
-          if (speciesLength >= 15) {
+          if (user.totalSpeciesEntryCount >= 15) {
             await this.lockedBadgeRepository.remove(badge);
             newUnlockedBadges.push({
               user,
@@ -343,7 +338,7 @@ export class GamificationService {
    * Returns the current leaderboard and the current position based on the username.
    * @param userId
    * @param oldUserPosition
-   */
+   */ h;
   async checkLeaderboardPosition(
     userId: number,
     oldUserPosition: number,
@@ -366,20 +361,11 @@ export class GamificationService {
     const hasNewLeaderboardPosition = oldUserPosition != currentPosition;
 
     const leaderboardUsers = allUsers.map((user) => {
-      // Delete the given attributes of the user objects because only the points and the username of the user matter
-      const {
-        isAdmin,
-        unlockedBadges,
-        lockedBadges,
-        sightings,
-        totalCommentCount,
-        totalPhotoCount,
-        password,
-        leaderboardPosition,
-        ...leaderboardUser
-      } = user;
-
-      return leaderboardUser;
+      return {
+        id: user.id,
+        username: user.username,
+        points: user.points,
+      };
     });
 
     return {
