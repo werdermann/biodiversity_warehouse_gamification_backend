@@ -9,24 +9,19 @@ export async function createBaseData(app: INestApplication) {
 
   const users: CreateUserDto[] = [
     {
-      username: 'DerFlamingo',
+      username: 'Testnutzer',
       password: '123',
-      points: 1500,
+      points: 0,
     },
     {
-      username: 'Bioexperte97',
+      username: 'HobbyEntdecker',
       password: '123',
-      points: 2000,
+      points: 40,
     },
     {
-      username: 'CharlesDarwin',
+      username: 'Forscher123',
       password: '123',
-      points: 1900,
-    },
-    {
-      username: 'Mendel',
-      password: '123',
-      points: 820,
+      points: 80,
     },
     {
       username: 'deLamarck',
@@ -36,17 +31,27 @@ export async function createBaseData(app: INestApplication) {
     {
       username: 'Einstein',
       password: '123',
-      points: 1010,
+      points: 110,
     },
     {
-      username: 'HobbyEntdecker',
+      username: 'Mendel',
       password: '123',
-      points: 210,
+      points: 200,
     },
     {
-      username: 'Forscher123',
+      username: 'CharlesDarwin',
       password: '123',
-      points: 515,
+      points: 230,
+    },
+    {
+      username: 'Bioexperte97',
+      password: '123',
+      points: 265,
+    },
+    {
+      username: 'DerFlamingo',
+      password: '123',
+      points: 280,
     },
   ];
 

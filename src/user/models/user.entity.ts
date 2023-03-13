@@ -38,6 +38,6 @@ export class User {
   @Column({ default: 0 })
   totalCommentCount: number;
 
-  @Column({ default: null })
-  leaderboardPosition: number | null;
+  @Column({ default: 0 })
+  totalSpeciesEntryCount: number;
 }

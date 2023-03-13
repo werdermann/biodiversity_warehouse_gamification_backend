@@ -41,34 +41,55 @@ export class SightingService {
         relations: ['unlockedBadges', 'lockedBadges', 'sightings'],
       });
 
-      /// Create an updated object that contains the user object
-      const sightingBody = { ...createSightingDto, user };
-
       /// Store the sighting instance
-      const sighting = await this.sightingRepository.save(sightingBody);
+      const sighting = await this.sightingRepository.save({
+        user,
+        ...createSightingDto,
+      });
 
       // Store the sightings
       sighting.speciesEntries = await Promise.all(
-        createSightingDto.speciesEntries.map(async (entry) =>
-          this.speciesEntryRepository.save({
+        createSightingDto.speciesEntries.map(async (entry) => {
+          user.totalSpeciesEntryCount++;
+
+          if (entry.comment) {
+            user.totalCommentCount++;
+          }
+
+          return await this.speciesEntryRepository.save({
             sighting: sighting,
             comment: entry.comment,
             count: entry.count,
             species: entry.species,
             evidenceStatus: entry.evidenceStatus,
-          }),
-        ),
+          });
+        }),
       );
+
+      if (sighting.locationComment) {
+        user.totalCommentCount++;
+      }
+
+      if (sighting.detailsComment) {
+        user.totalCommentCount++;
+      }
 
       // Store the photos in the sighting response
       sighting.photos = await Promise.all(
-        photos.map(async (photo) =>
-          this.photoRepository.save({
+        photos.map(async (photo) => {
+          user.totalPhotoCount++;
+
+          return await this.photoRepository.save({
             sighting: sighting,
             data: photo,
-          }),
-        ),
+          });
+        }),
       );
+
+      user.sightings.push(sighting);
+
+      // Update user object
+      await this.userRepository.save(user);
 
       return sighting;
     } catch (_) {
