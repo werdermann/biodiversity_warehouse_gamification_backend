@@ -43,32 +43,27 @@ export class GamificationService {
     sighting: Sighting,
     userId: number,
   ): Promise<GamificationResultResponse> {
-    const oldUser = await this.userRepository.findOneBy({ id: userId });
+    const allUsers = await this.userRepository.find({
+      order: {
+        points: {
+          direction: 'DESC',
+        },
+      },
+    });
+
+    const oldUserPosition = allUsers.findIndex((u) => u.id === userId);
 
     const gainedPoints = await this.calculatePoints(sighting, userId);
 
     const newUnlockedBadges = await this.checkBadgeConditions(userId);
 
     const { hasNewLeaderboardPosition, leaderboard } =
-      await this.checkLeaderboardPosition(userId, oldUser.leaderboardPosition);
+      await this.checkLeaderboardPosition(userId, oldUserPosition);
 
     const currentUser = await this.userRepository.findOne({
       where: { id: userId },
       relations: ['unlockedBadges', 'lockedBadges', 'sightings'],
     });
-
-    // TODO: Here for test purposes
-    console.log('### CURRENT USER ###');
-    console.log(currentUser);
-    console.log('### CURRENT USER END ###');
-
-    let sightingCount = 0;
-    currentUser.sightings.map((sighting) => {
-      sightingCount += sighting.speciesEntries.length;
-    });
-
-    console.log(`Sighting Count ${sightingCount}`);
-    // TODO: END
 
     return {
       leaderboard,
@@ -338,7 +333,7 @@ export class GamificationService {
    * Returns the current leaderboard and the current position based on the username.
    * @param userId
    * @param oldUserPosition
-   */ h;
+   */
   async checkLeaderboardPosition(
     userId: number,
     oldUserPosition: number,
@@ -354,12 +349,6 @@ export class GamificationService {
       },
     });
 
-    const user = allUsers.find((u) => u.id === userId);
-
-    const currentPosition = allUsers.indexOf(user);
-
-    const hasNewLeaderboardPosition = oldUserPosition != currentPosition;
-
     const leaderboardUsers = allUsers.map((user) => {
       return {
         id: user.id,
@@ -367,6 +356,10 @@ export class GamificationService {
         points: user.points,
       };
     });
+
+    const currentPosition = leaderboardUsers.findIndex((u) => u.id == userId);
+
+    const hasNewLeaderboardPosition = oldUserPosition != currentPosition;
 
     return {
       hasNewLeaderboardPosition,
@@ -415,7 +408,6 @@ export class GamificationService {
         totalCommentCount,
         totalPhotoCount,
         password,
-        leaderboardPosition,
         ...leaderboardUser
       } = user;
 

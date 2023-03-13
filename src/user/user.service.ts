@@ -31,20 +31,4 @@ export class UserService {
       .where(`user.username = :username`, { username })
       .getOne();
   }
-
-  async findAllSortedByPoints(): Promise<User[]> {
-    const allUsers = await this.userRepository.find({
-      order: {
-        points: {
-          direction: 'DESC',
-        },
-      },
-    });
-
-    return allUsers;
-  }
-
-  async updateUser(user: User): Promise<User> {
-    return await this.userRepository.save(user);
-  }
 }

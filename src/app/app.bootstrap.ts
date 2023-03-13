@@ -66,17 +66,6 @@ export async function createBaseData(app: INestApplication) {
     }
   }
 
-  // Save leaderboard positions
-  const savedUsers = await userService.findAllSortedByPoints();
-
-  for (const user of savedUsers) {
-    const position = savedUsers.indexOf(user);
-    user.leaderboardPosition = position;
-
-    // Save current leaderboard position
-    await userService.updateUser(user);
-  }
-
   const gamificationConfig = await gamificationService.getConfiguration();
 
   if (!gamificationConfig) {
