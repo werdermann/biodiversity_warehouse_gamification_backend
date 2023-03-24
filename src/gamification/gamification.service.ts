@@ -357,7 +357,7 @@ export class GamificationService {
       };
     });
 
-    const currentPosition = leaderboardUsers.findIndex((u) => u.id == userId);
+    const currentPosition = leaderboardUsers.findIndex((u) => u.id === userId);
 
     const hasNewLeaderboardPosition = oldUserPosition != currentPosition;
 
